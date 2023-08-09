@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="DBInsert" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <dbreport>
+        <connection>
+            <pool>
+                <dsName>MySQLConnection</dsName>
+            </pool>
+        </connection>
+        <statement>
+            <sql><![CDATA[INSERT INTO users (username, phoneNumber, emailAddress, firstName) VALUES (?,?,?,?)]]></sql>
+            <parameter expression="get-property('username')" type="VARCHAR"/>
+            <parameter expression="get-property('phoneNumber')" type="VARCHAR"/>
+            <parameter expression="get-property('emailAddress')" type="VARCHAR"/>
+            <parameter expression="get-property('firstName')" type="VARCHAR"/>
+        </statement>
+    </dbreport>
+</sequence>

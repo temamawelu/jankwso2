@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="DBSelect" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <dblookup description="DBSelect">
+        <connection>
+            <pool>
+                <dsName>MySQLConnection</dsName>
+            </pool>
+        </connection>
+        <statement>
+            <sql><![CDATA[select * from users where username=?]]></sql>
+            <parameter expression="get-property('username')" type="CHAR"/>
+            <result column="firstName" name="firstName"/>
+            <result column="lastName" name="lastName"/>
+            <result column="email" name="emailAddress"/>
+            <result column="phonenumber" name="phoneNumber"/>
+        </statement>
+    </dblookup>
+</sequence>

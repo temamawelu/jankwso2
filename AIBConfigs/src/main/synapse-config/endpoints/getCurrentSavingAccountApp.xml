@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<endpoint name="getCurrentSavingAccountApp" xmlns="http://ws.apache.org/ns/synapse">
+    <http method="get" uri-template="http://10.10.15.2:9080/bfweb/retail/v1/accounts/currentsavings/uri.var.account">
+        <suspendOnFailure>
+            <initialDuration>-1</initialDuration>
+            <progressionFactor>1.0</progressionFactor>
+        </suspendOnFailure>
+        <markForSuspension>
+            <retriesBeforeSuspension>0</retriesBeforeSuspension>
+        </markForSuspension>
+    </http>
+    <property expression="$ctx:token" name="Authorization" scope="transport"/>
+    <property expression="$ctx:uuid" name="X-Request-ID" scope="transport"/>
+    <property name="Content-Type" scope="transport" value="application/json"/>
+</endpoint>

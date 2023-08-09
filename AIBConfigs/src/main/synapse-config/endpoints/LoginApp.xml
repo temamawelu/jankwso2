@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<endpoint name="LoginApp" xmlns="http://ws.apache.org/ns/synapse">
+    <http method="post" uri-template="http://10.10.15.2:9080/bfweb/retail/MisysSSOFBPService/SSOloginService">
+        <suspendOnFailure>
+            <initialDuration>-1</initialDuration>
+            <progressionFactor>1.0</progressionFactor>
+        </suspendOnFailure>
+        <markForSuspension>
+            <retriesBeforeSuspension>0</retriesBeforeSuspension>
+        </markForSuspension>
+    </http>
+</endpoint>

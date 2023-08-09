@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><artifacts>
+    <artifact name="aibApp" groupId="com.aib.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/aibApp.xml</file>
+    </artifact>
+    <artifact name="aibApp_swagger" groupId="com.aib.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/aibApp_swagger.yaml</file>
+    </artifact>
+    <artifact name="aibApp_metadata" groupId="com.aib.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/aibApp_metadata.yaml</file>
+    </artifact>
+    <artifact name="LoginApp" groupId="com.aib.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/LoginApp.xml</file>
+    </artifact>
+    <artifact name="loginTokenApp" groupId="com.aib.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/loginTokenApp.xml</file>
+    </artifact>
+    <artifact name="getAccountApp" groupId="com.aib.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/getAccountApp.xml</file>
+    </artifact>
+    <artifact name="getCurrentSavingAccountApp" groupId="com.aib.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/getCurrentSavingAccountApp.xml</file>
+    </artifact>
+    <artifact name="transferAppE" groupId="com.aib.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/transferAppE.xml</file>
+    </artifact>
+    <artifact name="DBSelect" groupId="com.aib.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/DBSelect.xml</file>
+    </artifact>
+    <artifact name="DBInsert" groupId="com.aib.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/DBInsert.xml</file>
+    </artifact>
+    <artifact name="datasource" groupId="com.aib.datasource" version="5.2.42" type="datasource/datasource" serverRole="DataServicesServer">
+        <file>datasource/datasource.xml</file>
+    </artifact>
+    <artifact name="Deleteuser" groupId="com.aib.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/Deleteuser.xml</file>
+    </artifact>
+</artifacts>

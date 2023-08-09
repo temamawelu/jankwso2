@@ -1,0 +1,758 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/myapp" name="aibApp" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST" uri-template="/login">
+        <inSequence>
+            <log description="incoming" level="full"/>
+            <payloadFactory description="ou app" media-type="json">
+                <format>{
+					    "applicationID": "",
+					    "oSUserID": "",
+					    "passCode": "",
+					    "password": "$1",
+					    "userName": "$2"
+                        }
+                </format>
+                <args>
+                    <arg evaluator="json" expression="$.password"/>
+                    <arg evaluator="json" expression="$.username"/>
+                </args>
+            </payloadFactory>
+            <call>
+                <endpoint key="LoginApp"/>
+            </call>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <filter regex=".+" source="json-eval($.result)">
+                <then>
+                    <payloadFactory description="ou app" media-type="json">
+                        <format>
+                        {
+                         "responseCode": 200,
+                          "status": "Success",
+                          "message": "Logged Success!",
+                          "token": "$1"
+                        }
+                        </format>
+                        <args>
+                            <arg evaluator="json" expression="$.result"/>
+                        </args>
+                    </payloadFactory>
+                </then>
+                <else>
+                    <payloadFactory description="ou app" media-type="json">
+                        <format>
+                         {
+                         "responseCode": 400,
+                         "status": "error",
+                         "message": "$1"
+                          }
+                        </format>
+                        <args>
+                            <arg evaluator="json" expression="$.events[0].message"/>
+                        </args>
+                    </payloadFactory>
+                </else>
+            </filter>
+            <header expression="json-eval($.token)" name="Authorization" scope="transport"/>
+            <log description="outcoming log"/>
+            <respond/>
+        </outSequence>
+        <faultSequence/>
+    </resource>
+    <resource methods="POST" uri-template="/getAccount">
+        <inSequence>
+            <property expression="json-eval($.accountNumber)" name="uri.var.account" scope="default" type="STRING"/>
+            <log description="customeLog1" level="custom">
+                <property expression="$trp:username" name="username"/>
+                <property expression="$trp:password" name="password"/>
+            </log>
+            <property expression="$trp:username" name="username" scope="default" type="STRING"/>
+            <property expression="$trp:password" name="password" scope="default" type="STRING"/>
+            <payloadFactory description="Appp11" media-type="json">
+                <format>
+                        {
+                          "password": "$1",
+                          "username": "$2"
+                        }
+               </format>
+                <args>
+                    <arg evaluator="xml" expression="$ctx:password"/>
+                    <arg evaluator="xml" expression="$ctx:username"/>
+                </args>
+            </payloadFactory>
+            <call>
+                <endpoint key="loginTokenApp"/>
+            </call>
+            <filter regex="200" source="json-eval($.responseCode)">
+                <then>
+                    <property expression="json-eval($.token)" name="token" scope="default" type="STRING"/>
+                    <property expression="fn:substring-after(get-property('MessageID'), 'urn:uuid:')" name="uuid" scope="default" type="STRING"/>
+                    <call>
+                        <endpoint key="getAccountApp"/>
+                    </call>
+                    <log level="full"/>
+                </then>
+                <else/>
+            </filter>
+            <log description="getaccountLog" level="full"/>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+    <resource methods="POST" uri-template="/CurrentSaving">
+        <inSequence>
+            <property expression="json-eval($.accountNumber)" name="uri.var.account" scope="default" type="STRING"/>
+            <log description="customeLog12" level="custom">
+                <property expression="$trp:username" name="username"/>
+                <property expression="$trp:password" name="password"/>
+            </log>
+            <property expression="$trp:username" name="username" scope="default" type="STRING"/>
+            <property expression="$trp:password" name="password" scope="default" type="STRING"/>
+            <payloadFactory description="Appp1111" media-type="json">
+                <format>
+                        {
+                          "password": "$1",
+                          "username": "$2"
+                        }
+               </format>
+                <args>
+                    <arg evaluator="xml" expression="$ctx:password"/>
+                    <arg evaluator="xml" expression="$ctx:username"/>
+                </args>
+            </payloadFactory>
+            <call>
+                <endpoint key="loginTokenApp"/>
+            </call>
+            <filter regex="200" source="json-eval($.responseCode)">
+                <then>
+                    <property expression="json-eval($.token)" name="token" scope="default" type="STRING"/>
+                    <property expression="fn:substring-after(get-property('MessageID'), 'urn:uuid:')" name="uuid" scope="default" type="STRING"/>
+                    <call>
+                        <endpoint key="getCurrentSavingAccountApp"/>
+                    </call>
+                    <log level="full"/>
+                </then>
+                <else/>
+            </filter>
+            <log description="CurrentSavingAccountLog" level="full"/>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+    <resource methods="POST" uri-template="/makeTransaction">
+        <inSequence>
+            <log description="custome_log1" level="custom">
+                <property expression="$trp:username" name="username"/>
+                <property expression="$trp:password" name="password"/>
+            </log>
+            <property expression="$trp:username" name="username" scope="default" type="STRING"/>
+            <property expression="$trp:password" name="password" scope="default" type="STRING"/>
+            <payloadFactory description="app_xml" media-type="xml">
+                <format>
+                    <soapenv:Envelope xmlns:att="http://www.misys.com/bankfusion/attributes" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:typ="http://www.misys.com/financialposting/types" xmlns:web="http://webservices.bankfusion.trapedza.com">
+                        <soapenv:Header>
+                            <web:bfgenericsoapheader>
+                                <!--Optional:-->
+                                <web:authentication>
+                                    <web:userName>$1</web:userName>
+                                    <web:password>$2</web:password>
+                                    <!--Optional:-->
+                                    <web:passCode/>
+                                    <!--Optional:-->
+                                    <web:userLocator/>
+                                    <!--Optional:-->
+                                    <web:casRestletUrl/>
+                                    <!--Optional:-->
+                                    <web:casValidateUrl/>
+                                </web:authentication>
+                                <web:BFHeader>
+                                    <!--Optional:-->
+                                    <att:correlationID/>
+                                    <!--Optional:-->
+                                    <att:zone/>
+                                    <att:autoAuthorize/>
+                                    <!--Optional:-->
+                                    <att:applicationContext/>
+                                    <!--Zero or more repetitions:-->
+                                    <att:cachedBPMUsers/>
+                                    <!--Optional:-->
+                                    <att:destination/>
+                                    <!--Optional:-->
+                                    <att:extension/>
+                                </web:BFHeader>
+                            </web:bfgenericsoapheader>
+                        </soapenv:Header>
+                        <soapenv:Body>
+                            <web:UB_TXN_BackOfficeAccountPosting_SRVRequest>
+                                <web:backOfficeAccountPostingRq>
+                                    <!--Optional:-->
+                                    <typ:srvVersion/>
+                                    <typ:txnDetails>
+                                        <typ:transactionReference>$3</typ:transactionReference>
+                                        <typ:forcePost>false</typ:forcePost>
+                                        <typ:doNotAutoClearIfFwdValued>false</typ:doNotAutoClearIfFwdValued>
+                                        <!--Optional:-->
+                                        <typ:transactionId/>
+                                        <!--Optional:-->
+                                        <typ:branchSortCode>$10</typ:branchSortCode>
+                                        <!--Optional:-->
+                                        <typ:channelId>$11</typ:channelId>
+                                        <!--Optional:-->
+                                        <typ:valueDate/>
+                                    </typ:txnDetails>
+                                    <!--2 or more repetitions:-->
+                                    <typ:backOfficePostingLegs>
+                                        <typ:amount>$4</typ:amount>
+                                        <typ:transactionCurrency>$5</typ:transactionCurrency>
+                                        <typ:transactionCode>$6</typ:transactionCode>
+                                        <typ:creditDebitIndicator>C</typ:creditDebitIndicator>
+                                        <!--Optional:-->
+                                        <typ:accountId>$7</typ:accountId>
+                                        <!--Optional:-->
+                                        <typ:accountPseudonym>
+                                            <typ:pseudonym/>
+                                            <typ:context/>
+                                            <typ:contextValue/>
+                                        </typ:accountPseudonym>
+                                        <!--Optional:-->
+                                        <typ:narrative>$8</typ:narrative>
+                                        <!--Optional:-->
+                                        <typ:baseEquivalentAmount/>
+                                        <!--Optional:-->
+                                        <typ:amountToBaseEquivalentFxDetail>
+                                            <!--Optional:-->
+                                            <typ:exchangeRate/>
+                                            <!--Optional:-->
+                                            <typ:exchangeRateType/>
+                                            <!--Optional:-->
+                                            <typ:multiplyDivide>M</typ:multiplyDivide>
+                                        </typ:amountToBaseEquivalentFxDetail>
+                                    </typ:backOfficePostingLegs>
+                                    <typ:backOfficePostingLegs>
+                                        <typ:amount>$4</typ:amount>
+                                        <typ:transactionCurrency>$5</typ:transactionCurrency>
+                                        <typ:transactionCode>$6</typ:transactionCode>
+                                        <typ:creditDebitIndicator>D</typ:creditDebitIndicator>
+                                        <!--Optional:-->
+                                        <typ:accountId>$9</typ:accountId>
+                                        <!--Optional:-->
+                                        <typ:accountPseudonym>
+                                            <typ:pseudonym/>
+                                            <typ:context/>
+                                            <typ:contextValue/>
+                                        </typ:accountPseudonym>
+                                        <!--Optional:-->
+                                        <typ:narrative>$8</typ:narrative>
+                                        <!--Optional:-->
+                                        <typ:baseEquivalentAmount/>
+                                        <!--Optional:-->
+                                        <typ:amountToBaseEquivalentFxDetail>
+                                            <!--Optional:-->
+                                            <typ:exchangeRate/>
+                                            <!--Optional:-->
+                                            <typ:exchangeRateType/>
+                                            <!--Optional:-->
+                                            <typ:multiplyDivide>M</typ:multiplyDivide>
+                                        </typ:amountToBaseEquivalentFxDetail>
+                                    </typ:backOfficePostingLegs>
+                                    <!--Zero or more repetitions:-->
+                                    <typ:eventCharges>
+                                        <typ:totalChgAmt>
+                                            <typ:isoCurrencyCode/>
+                                            <typ:amount/>
+                                        </typ:totalChgAmt>
+                                        <typ:totalTaxAmt>
+                                            <typ:isoCurrencyCode/>
+                                            <typ:amount/>
+                                        </typ:totalTaxAmt>
+                                        <typ:totalChgTaxAmt>
+                                            <typ:isoCurrencyCode/>
+                                            <typ:amount/>
+                                        </typ:totalChgTaxAmt>
+                                        <typ:fundingAccount/>
+                                        <typ:mainAccountId/>
+                                        <typ:noOfChgTaxAmtDetails>0</typ:noOfChgTaxAmtDetails>
+                                        <typ:isWaived>false</typ:isWaived>
+                                        <!--Zero or more repetitions:-->
+                                        <typ:chgTaxAmtDetails>
+                                            <typ:select>false</typ:select>
+                                            <typ:isWaived>false</typ:isWaived>
+                                            <!--Optional:-->
+                                            <typ:chgAmendReason/>
+                                            <!--Optional:-->
+                                            <typ:originalChgAmtCalcDetails>
+                                                <typ:onlineChgKeyDtls>
+                                                    <!--Optional:-->
+                                                    <typ:onlineChgId/>
+                                                    <!--Optional:-->
+                                                    <typ:onlineChargeDesc/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeType/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeLevel/>
+                                                    <!--Optional:-->
+                                                    <typ:account/>
+                                                    <!--Optional:-->
+                                                    <typ:productCategory/>
+                                                    <!--Optional:-->
+                                                    <typ:product/>
+                                                    <!--Optional:-->
+                                                    <typ:eventCategory/>
+                                                    <!--Optional:-->
+                                                    <typ:eventSubCategory/>
+                                                    <!--Optional:-->
+                                                    <typ:channelId/>
+                                                    <!--Optional:-->
+                                                    <typ:accountStyle/>
+                                                    <!--Optional:-->
+                                                    <typ:partySubType/>
+                                                    <!--Optional:-->
+                                                    <typ:paymentSystem/>
+                                                    <!--Optional:-->
+                                                    <typ:paymentType/>
+                                                    <typ:walkIn>false</typ:walkIn>
+                                                    <!--Optional:-->
+                                                    <typ:txnCurrency/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeBasis/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeCodeId/>
+                                                    <!--Optional:-->
+                                                    <typ:insufficientFundsInd/>
+                                                    <typ:isApply>false</typ:isApply>
+                                                </typ:onlineChgKeyDtls>
+                                                <typ:chargeCalcCodeId/>
+                                                <typ:chargeAmount>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chargeAmount>
+                                                <typ:chgAmtTxnCur>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chgAmtTxnCur>
+                                                <typ:chgAmtFundAcctCur>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chgAmtFundAcctCur>
+                                                <typ:chgAmtAcctCur>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chgAmtAcctCur>
+                                                <!--Optional:-->
+                                                <typ:chgExchRateDetails>
+                                                    <!--Optional:-->
+                                                    <typ:exchangeRate/>
+                                                    <!--Optional:-->
+                                                    <typ:exchangeRateType/>
+                                                    <!--Optional:-->
+                                                    <typ:multiplyDivide>M</typ:multiplyDivide>
+                                                </typ:chgExchRateDetails>
+                                                <!--Optional:-->
+                                                <typ:chgNarrative/>
+                                                <!--Optional:-->
+                                                <typ:chgHostTxnCode/>
+                                                <typ:chgRecAcct/>
+                                            </typ:originalChgAmtCalcDetails>
+                                            <!--Optional:-->
+                                            <typ:originalTaxAmtCalcDetails>
+                                                <typ:onlineChgKeyDtls>
+                                                    <!--Optional:-->
+                                                    <typ:onlineChgId/>
+                                                    <!--Optional:-->
+                                                    <typ:onlineChargeDesc/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeType/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeLevel/>
+                                                    <!--Optional:-->
+                                                    <typ:account/>
+                                                    <!--Optional:-->
+                                                    <typ:productCategory/>
+                                                    <!--Optional:-->
+                                                    <typ:product/>
+                                                    <!--Optional:-->
+                                                    <typ:eventCategory/>
+                                                    <!--Optional:-->
+                                                    <typ:eventSubCategory/>
+                                                    <!--Optional:-->
+                                                    <typ:channelId/>
+                                                    <!--Optional:-->
+                                                    <typ:accountStyle/>
+                                                    <!--Optional:-->
+                                                    <typ:partySubType/>
+                                                    <!--Optional:-->
+                                                    <typ:paymentSystem/>
+                                                    <!--Optional:-->
+                                                    <typ:paymentType/>
+                                                    <typ:walkIn>false</typ:walkIn>
+                                                    <!--Optional:-->
+                                                    <typ:txnCurrency/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeBasis/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeCodeId/>
+                                                    <!--Optional:-->
+                                                    <typ:insufficientFundsInd/>
+                                                    <typ:isApply>false</typ:isApply>
+                                                </typ:onlineChgKeyDtls>
+                                                <typ:chargeCalcCodeId/>
+                                                <typ:chargeAmount>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chargeAmount>
+                                                <typ:chgAmtTxnCur>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chgAmtTxnCur>
+                                                <typ:chgAmtFundAcctCur>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chgAmtFundAcctCur>
+                                                <typ:chgAmtAcctCur>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chgAmtAcctCur>
+                                                <!--Optional:-->
+                                                <typ:chgExchRateDetails>
+                                                    <!--Optional:-->
+                                                    <typ:exchangeRate/>
+                                                    <!--Optional:-->
+                                                    <typ:exchangeRateType/>
+                                                    <!--Optional:-->
+                                                    <typ:multiplyDivide>M</typ:multiplyDivide>
+                                                </typ:chgExchRateDetails>
+                                                <!--Optional:-->
+                                                <typ:chgNarrative/>
+                                                <!--Optional:-->
+                                                <typ:chgHostTxnCode/>
+                                                <typ:chgRecAcct/>
+                                            </typ:originalTaxAmtCalcDetails>
+                                            <typ:chgAmtCalcDetails>
+                                                <typ:onlineChgKeyDtls>
+                                                    <!--Optional:-->
+                                                    <typ:onlineChgId/>
+                                                    <!--Optional:-->
+                                                    <typ:onlineChargeDesc/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeType/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeLevel/>
+                                                    <!--Optional:-->
+                                                    <typ:account/>
+                                                    <!--Optional:-->
+                                                    <typ:productCategory/>
+                                                    <!--Optional:-->
+                                                    <typ:product/>
+                                                    <!--Optional:-->
+                                                    <typ:eventCategory/>
+                                                    <!--Optional:-->
+                                                    <typ:eventSubCategory/>
+                                                    <!--Optional:-->
+                                                    <typ:channelId/>
+                                                    <!--Optional:-->
+                                                    <typ:accountStyle/>
+                                                    <!--Optional:-->
+                                                    <typ:partySubType/>
+                                                    <!--Optional:-->
+                                                    <typ:paymentSystem/>
+                                                    <!--Optional:-->
+                                                    <typ:paymentType/>
+                                                    <typ:walkIn>false</typ:walkIn>
+                                                    <!--Optional:-->
+                                                    <typ:txnCurrency/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeBasis/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeCodeId/>
+                                                    <!--Optional:-->
+                                                    <typ:insufficientFundsInd/>
+                                                    <typ:isApply>false</typ:isApply>
+                                                </typ:onlineChgKeyDtls>
+                                                <typ:chargeCalcCodeId/>
+                                                <typ:chargeAmount>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chargeAmount>
+                                                <typ:chgAmtTxnCur>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chgAmtTxnCur>
+                                                <typ:chgAmtFundAcctCur>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chgAmtFundAcctCur>
+                                                <typ:chgAmtAcctCur>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chgAmtAcctCur>
+                                                <!--Optional:-->
+                                                <typ:chgExchRateDetails>
+                                                    <!--Optional:-->
+                                                    <typ:exchangeRate/>
+                                                    <!--Optional:-->
+                                                    <typ:exchangeRateType/>
+                                                    <!--Optional:-->
+                                                    <typ:multiplyDivide>M</typ:multiplyDivide>
+                                                </typ:chgExchRateDetails>
+                                                <!--Optional:-->
+                                                <typ:chgNarrative/>
+                                                <!--Optional:-->
+                                                <typ:chgHostTxnCode/>
+                                                <typ:chgRecAcct/>
+                                            </typ:chgAmtCalcDetails>
+                                            <!--Optional:-->
+                                            <typ:taxAmtCalcDetails>
+                                                <typ:onlineChgKeyDtls>
+                                                    <!--Optional:-->
+                                                    <typ:onlineChgId/>
+                                                    <!--Optional:-->
+                                                    <typ:onlineChargeDesc/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeType/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeLevel/>
+                                                    <!--Optional:-->
+                                                    <typ:account/>
+                                                    <!--Optional:-->
+                                                    <typ:productCategory/>
+                                                    <!--Optional:-->
+                                                    <typ:product/>
+                                                    <!--Optional:-->
+                                                    <typ:eventCategory/>
+                                                    <!--Optional:-->
+                                                    <typ:eventSubCategory/>
+                                                    <!--Optional:-->
+                                                    <typ:channelId/>
+                                                    <!--Optional:-->
+                                                    <typ:accountStyle/>
+                                                    <!--Optional:-->
+                                                    <typ:partySubType/>
+                                                    <!--Optional:-->
+                                                    <typ:paymentSystem/>
+                                                    <!--Optional:-->
+                                                    <typ:paymentType/>
+                                                    <typ:walkIn>false</typ:walkIn>
+                                                    <!--Optional:-->
+                                                    <typ:txnCurrency/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeBasis/>
+                                                    <!--Optional:-->
+                                                    <typ:chargeCodeId/>
+                                                    <!--Optional:-->
+                                                    <typ:insufficientFundsInd/>
+                                                    <typ:isApply>false</typ:isApply>
+                                                </typ:onlineChgKeyDtls>
+                                                <typ:chargeCalcCodeId/>
+                                                <typ:chargeAmount>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chargeAmount>
+                                                <typ:chgAmtTxnCur>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chgAmtTxnCur>
+                                                <typ:chgAmtFundAcctCur>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chgAmtFundAcctCur>
+                                                <typ:chgAmtAcctCur>
+                                                    <typ:isoCurrencyCode/>
+                                                    <typ:amount/>
+                                                </typ:chgAmtAcctCur>
+                                                <!--Optional:-->
+                                                <typ:chgExchRateDetails>
+                                                    <!--Optional:-->
+                                                    <typ:exchangeRate/>
+                                                    <!--Optional:-->
+                                                    <typ:exchangeRateType/>
+                                                    <!--Optional:-->
+                                                    <typ:multiplyDivide>M</typ:multiplyDivide>
+                                                </typ:chgExchRateDetails>
+                                                <!--Optional:-->
+                                                <typ:chgNarrative/>
+                                                <!--Optional:-->
+                                                <typ:chgHostTxnCode/>
+                                                <typ:chgRecAcct/>
+                                            </typ:taxAmtCalcDetails>
+                                        </typ:chgTaxAmtDetails>
+                                        <!--Optional:-->
+                                        <typ:partyCategory/>
+                                    </typ:eventCharges>
+                                </web:backOfficeAccountPostingRq>
+                            </web:UB_TXN_BackOfficeAccountPosting_SRVRequest>
+                        </soapenv:Body>
+                    </soapenv:Envelope>
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="$ctx:username"/>
+                    <arg evaluator="xml" expression="$ctx:password"/>
+                    <arg evaluator="json" expression="$.transactionReference"/>
+                    <arg evaluator="json" expression="$.amount"/>
+                    <arg evaluator="json" expression="$.currency"/>
+                    <arg evaluator="json" expression="$.transactionCode"/>
+                    <arg evaluator="json" expression="$.creditAccountNumber"/>
+                    <arg evaluator="json" expression="$.narration"/>
+                    <arg evaluator="json" expression="$.debitAccountNumber"/>
+                    <arg evaluator="json" expression="$.branchCode"/>
+                    <arg evaluator="json" expression="$.channel"/>
+                </args>
+            </payloadFactory>
+            <call>
+                <endpoint key="transferAppE"/>
+            </call>
+            <log description="lastTransactionLog"/>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <log description="response_log" level="full"/>
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <jsontransform>
+                <property name="synapse.commons.json.output.autoPrimitive" value="false"/>
+                <property name="synapse.commons.enableXmlNullForEmptyElement" value="false"/>
+            </jsontransform>
+            <property expression="json-eval($.UB_TXN_BackOfficeAccountPosting_SRVResponse.backOfficeAccountPostingRs.transactionId)" name="FT" scope="default" type="STRING"/>
+            <property expression="json-eval($.Fault.faultstring)" name="error1" scope="default" type="STRING"/>
+            <property expression="json-eval($.UB_TXN_BackOfficeAccountPosting_SRVResponse.ErrorResponse.EventCollection.Event.EventMessage)" name="error2" scope="default" type="STRING"/>
+            <property expression="fn:concat($ctx:error1,$ctx:error2)" name="error" scope="default" type="STRING"/>
+            <filter xpath="$ctx:FT != &quot;&quot;">
+                <then>
+                    <payloadFactory media-type="json">
+                        <format>
+                              {
+							    "responseCode": 200,
+							    "status": "Success",
+							    "message": "Successfully Completed The Transaction.",
+							    "transactionCode": "$1",
+							    "valueDate":"$2"
+							   
+							  }
+							
+							</format>
+                        <args>
+                            <arg evaluator="json" expression="$.UB_TXN_BackOfficeAccountPosting_SRVResponse.backOfficeAccountPostingRs.transactionId"/>
+                            <arg evaluator="json" expression="$.UB_TXN_BackOfficeAccountPosting_SRVResponse.ErrorResponse.Timestamp"/>
+                        </args>
+                    </payloadFactory>
+                </then>
+                <else>
+                    <payloadFactory media-type="json">
+                        <format>
+                {
+							    "responseCode": 400,
+							    "status": "Failed",
+							    "message": "$1"
+							   
+							}
+							
+							</format>
+                        <args>
+                            <arg evaluator="xml" expression="$ctx:error"/>
+                        </args>
+                    </payloadFactory>
+                </else>
+            </filter>
+            <log description="outgoing_log" level="full"/>
+            <respond/>
+        </outSequence>
+        <faultSequence/>
+    </resource>
+    <resource methods="GET" uri-template="/getUser?username={q1}">
+        <inSequence>
+            <log description="incomingrequest" level="full">
+                <property expression="get-property('SYSTEM_DATE','YYYY-MM-DD')" name="requestTime"/>
+                <property expression="get-property('query.param.username')" name="username"/>
+            </log>
+            <property expression="get-property(query.param.username)" name="username" scope="default" type="STRING"/>
+            <sequence key="DBSelect"/>
+            <log description="dboutput" level="custom">
+                <property expression="get-property('query.param.username')" name="username"/>
+                <property expression="get-property('query.param.emailAddress')" name="emailAddress"/>
+                <property expression="get-property('phonenumber')" name="phonenumber"/>
+                <property expression="get-property('firstName')" name="firstName"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>
+                {
+                "username":"$1",
+                "phonenumber":"$2",
+                "emailAddress":"$3",
+                "firstName":"$4"
+                }   
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="$ctx:username"/>
+                    <arg evaluator="xml" expression="$ctx:phonenumber"/>
+                    <arg evaluator="xml" expression="$ctx:emailAddress"/>
+                    <arg evaluator="xml" expression="$ctx:firstName"/>
+                </args>
+            </payloadFactory>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <payloadFactory media-type="json">
+                <format>
+            	{"message":"$1","errorCode":"$2","detail":"$3"}
+            	</format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('ERROR_MESSAGE')"/>
+                    <arg evaluator="xml" expression="get-property('ERROR_CODE')"/>
+                    <arg evaluator="xml" expression="get-property('ERROR_DETAIL')"/>
+                </args>
+            </payloadFactory>
+            <respond/>
+        </faultSequence>
+    </resource>
+    <resource methods="POST" uri-template="/addUser/{username}">
+        <inSequence>
+            <property expression="get-property('uri.var.username')" name="username" scope="default" type="STRING"/>
+            <log description="incomingrequest" level="custom">
+                <property expression="get-property('SYSTEM_DATE','YYYY-MM-DD')" name="requestTime"/>
+                <property expression="get-property('uri.var.username')" name="username"/>
+            </log>
+            <property expression="get-property('uri.var.username')" name="username" scope="default" type="STRING"/>
+            <property expression="json-eval($.emailAddress)" name="emailAddress" scope="default" type="STRING"/>
+            <property expression="json-eval($.phoneNumber)" name="phoneNumber" scope="default" type="STRING"/>
+            <property expression="json-eval($.firstName)" name="firstName" scope="default" type="STRING"/>
+            <sequence key="DBInsert"/>
+            <log description="insertLof" level="custom">
+                <property expression="get-property('uri.var.username')" name="username"/>
+                <property expression="get-property('emailAddress')" name="emailAddress"/>
+                <property expression="get-property('phoneNumber')" name="phoneNumber"/>
+                <property expression="get-property('firstName')" name="firstName"/>
+            </log>
+            <payloadFactory media-type="xml">
+                <format>
+                    <response xmlns="">
+                        <UserName_Response>$1</UserName_Response>
+                        <PhoneNumber_Response>$2</PhoneNumber_Response>
+                        <email>$3</email>
+                        <first_name>$4</first_name>
+                    </response>
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="$ctx:username"/>
+                    <arg evaluator="xml" expression="$ctx:phoneNumber"/>
+                    <arg evaluator="xml" expression="$ctx:emailAddress"/>
+                    <arg evaluator="xml" expression="$ctx:firstName"/>
+                </args>
+            </payloadFactory>
+        </inSequence>
+        <outSequence/>
+        <faultSequence>
+            <payloadFactory media-type="json">
+                <format>
+            	{"message":"$1","errorCode":"$2","detail":"$3"}
+            	</format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('ERROR_MESSAGE')"/>
+                    <arg evaluator="xml" expression="get-property('ERROR_CODE')"/>
+                    <arg evaluator="xml" expression="get-property('ERROR_DETAIL')"/>
+                </args>
+            </payloadFactory>
+        </faultSequence>
+    </resource>
+</api>

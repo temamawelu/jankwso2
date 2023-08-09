@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="Deleteuser" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <dbreport description="Deleteuser">
+        <connection>
+            <pool>
+                <dsName>MySQLConnection</dsName>
+            </pool>
+        </connection>
+        <statement>
+            <sql><![CDATA[delete from users where username=?]]></sql>
+            <parameter expression="get-property('username')" type="CHAR"/>
+            <result column="firstName" name="firstName"/>
+            <result column="lastName" name="lastName"/>
+            <result column="email" name="emailAddress"/>
+            <result column="phonenumber" name="phoneNumber"/>
+        </statement>
+    </dbreport>
+</sequence>

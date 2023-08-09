@@ -1,0 +1,15 @@
+<datasource>
+  <name>MySQLConnection</name>
+  <description>MySQL Connection</description>
+  <jndiConfig useDataSourceFactory="false">
+    <name>test22</name>
+  </jndiConfig>
+  <definition type="RDBMS">
+    <configuration>
+      <driverClassName>com.mysql.jdbc.Driver</driverClassName>
+       <url>jdbc:mysql://localhost:3306/afirstwso2</url>
+      <username>root</username>
+      <password />
+    </configuration>
+  </definition>
+</datasource>
